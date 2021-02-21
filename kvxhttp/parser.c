@@ -19,34 +19,6 @@ header_value_size_type_t http_header_get_value_length(struct HttpHeader *header)
     return *((header_value_size_type_t *)header->value-sizeof(header_value_size_type_t));
 }
 
-struct HttpString http_alloc_string(size_t initial_capacity,
-                                    const char *initial_value, size_t initial_value_size) {
-    struct HttpString string;
-
-    if (initial_capacity == 0) {
-        initial_capacity = initial_value_size;
-    }
-
-    string.capacity = initial_capacity;
-    string.data = calloc(sizeof(char), initial_capacity+1); // for c string compatibility
-    string.length = initial_value_size;
-
-    if (initial_value != NULL) {
-        memcpy(string.data, initial_value, initial_value_size);
-    }
-
-    return string;
-}
-
-void http_free_string(struct HttpString *string) {
-    string->length = 0;
-    string->capacity = 0;
-
-    free(string->data);
-
-    string->data = NULL;
-}
-
 http_bool_t http_header_parse(char *data, size_t data_length,
                               struct HttpRequest *request_ptr, size_t max_path_size) {
     uint8_t newline_state = 0;
@@ -95,8 +67,8 @@ http_bool_t http_header_parse(char *data, size_t data_length,
                         return TOO_LONG_PATH_SIZE;
                     }
 
-                    request_ptr->http_path = http_alloc_string(0, data+start_string_offset,
-                                                               offset_size);
+                    request_ptr->http_path = kstring_create(data+start_string_offset, 0u,
+                                                            offset_size);
 
                     headline_state = PARSING_PROTOCOL;
 
@@ -195,6 +167,6 @@ http_bool_t http_header_parse(char *data, size_t data_length,
 }
 
 void http_header_free(struct HttpRequest *request_ptr) {
-    http_free_string(&request_ptr->http_path);
+    kstring_free(&request_ptr->http_path);
 }
 

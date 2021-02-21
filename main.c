@@ -1,22 +1,14 @@
 #include <stdio.h>
 
-#include "kvxhttp/parser.h"
-
-#define ITERCOUNT (10000000u >> 1u)
+#include "kvxhttp/server.h"
 
 int main() {
-    struct HttpRequest request;
+    KString path = kstring_create("./html/", 0, 0);
 
-    char *data = "GET / HTTP/1.1\r\n"
-                 "Connection: close\r\n"
-                 "Content-Length: 1\r\n\r\n"
-                 "1";
-    size_t data_strlen = strlen(data);
+    HTTPServer server = create_server(8080, INADDR_ANY,
+            &path);
 
-    for (size_t pos = 0; pos < ITERCOUNT; pos++) {
-        http_header_parse(data, data_strlen,
-                          &request, 200);
+    start_server(&server);
 
-        http_header_free(&request);
-    }
+    kstring_free(&path);
 }

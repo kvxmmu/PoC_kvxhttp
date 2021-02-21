@@ -6,23 +6,19 @@
 #define KVXHTTP_PARSER_H
 
 #include "definitions.h"
+#include "kstring.h"
 
 #include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include <ctype.h>
 
 typedef uint8_t header_name_size_t;
 typedef uint16_t header_value_size_type_t; // MAX: 1kb header
 typedef uint8_t http_bool_t;
 
 typedef uint8_t headers_count_t;
-
-struct HttpString {
-    char *data;
-
-    size_t capacity;
-    size_t length;
-};
 
 struct HttpHeader {
     char name[MAX_KEY_SIZE];
@@ -35,7 +31,7 @@ struct HttpRequest {
 
     char http_proto[MAX_HTTP_PROTO_SIZE];
     char http_method[MAX_HTTP_METHOD_SIZE];
-    struct HttpString http_path;
+    KString http_path;
 };
 
 
@@ -51,5 +47,12 @@ void              http_free_string(struct HttpString *string);
 http_bool_t http_header_parse(char *data, size_t data_length,
             struct HttpRequest *request_ptr, size_t max_path_size);
 void http_header_free(struct HttpRequest *request_ptr);
+
+// String
+
+char from_hex(char ch) {
+    return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
+}
+
 
 #endif //KVXHTTP_PARSER_H
